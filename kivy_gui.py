@@ -19,7 +19,7 @@ from kivy.uix.popup import Popup
 from tensorflow.python.keras.models import load_model
 
 from data_utils import target_to_move
-from play_ai_games import engine_move
+from chess_model import ChessModel
 
 
 class ChessButton(Button):
@@ -34,8 +34,8 @@ class BoardButton(Button):
         super().__init__(**kwargs)
 
 
-class KivyGUI(App):
-    def __init__(self, **kwargs):
+class ChessGUI(App):
+    def __init__(self, model_path, verbose=False, **kwargs):
         super().__init__(**kwargs)
         self.board_size = 8
         self.button_positions = {}
@@ -43,7 +43,7 @@ class KivyGUI(App):
         svg2png(bytestring=chess.svg.board(self.board, size=350), write_to=f'moves/chess.png')
         self.move_str = ""
 
-        self.engine = load_model("models/epochs_40_batch_size_512_2021-03-19_19:44:22.336811.h5")
+        self.engine = ChessModel(model_path, verbose=verbose)
 
     def build(self):
         self.layout = GridLayout(cols=self.board_size, padding="31px")
@@ -107,7 +107,7 @@ class KivyGUI(App):
                 # ai_move = np.random.choice(list(self.board.legal_moves))
                 # ai_move = list(self.board.legal_moves)[0]
                 # print(ai_move)
-                ai_move = engine_move(self.engine, self.board)
+                ai_move = self.engine.make_move(self.board)
                 print(ai_move)
 
                 if isinstance(ai_move, chess.Move):
@@ -168,4 +168,4 @@ class KivyGUI(App):
 
 
 if __name__ == '__main__':
-    KivyGUI().run()
+    ChessGUI("models/epochs_40_batch_size_512_2021-03-19_19:44:22.336811.h5").run()

@@ -1,15 +1,17 @@
 # import tensorflow as tf
 import shutil
 import sys
+import zipfile
 from pathlib import Path
 
 import chess.pgn
 import chess.pgn
 import numpy as np
 import ray
+import wget
 from tqdm import tqdm
 
-from data_utils import move_to_target, board_to_tensor
+from data_utils import move_to_target, board_to_tensor, tensor_to_board, target_to_move
 
 ray.init()
 
@@ -27,23 +29,34 @@ def run_game_normal(game):
         return x_board, x_meta, y
     board = game.board()
     tensor, meta = board_to_tensor(board)
-    # board_check = chess.Board(tensor_to_board(tensor, meta))
-    # assert str(board) == str(board_check)
-    # assert board.turn == board_check.turn
+    board_check = chess.Board(tensor_to_board(tensor, meta))
+    assert str(board) == str(board_check)
+    assert board.turn == board_check.turn
     for i, move in enumerate(game.mainline_moves()):
         target = move_to_target(move)
         if white_win and board.turn or black_win and not board.turn:
             x_board.append(tensor)
             x_meta.append(meta)
             y.append(target)
-        # move_check = target_to_move(target)
-        # assert str(move)[:4] == str(move_check)
+        move_check = target_to_move(target)
+        assert str(move)[:4] == str(move_check)
         board.push(move)
         tensor, meta = board_to_tensor(board)
-        # board_check = chess.Board(tensor_to_board(tensor, meta))
-        # assert str(board) == str(board_check)
-        # assert board.turn == board_check.turn
+        board_check = chess.Board(tensor_to_board(tensor, meta))
+        assert str(board) == str(board_check)
+        assert board.turn == board_check.turn
     return x_board, x_meta, y
+
+
+def download_pgn(download_url):
+    output_zip = Path("data/pgn_games.zip")
+    print(f"Downloading PGN at: {download_url}")
+    wget.download(download_url, out=output_zip.as_posix())
+    zip_file = zipfile.ZipFile(output_zip.as_posix())
+    zip_file.extractall("data")
+    pgn_path = Path("data", zip_file.filelist[0].filename)
+    assert pgn_path.exists()
+    return pgn_path
 
 
 class PgnToArrayConverter:
@@ -61,7 +74,7 @@ class PgnToArrayConverter:
 
     def get_game_indices(self):
         game_number = 0
-        pgn_indices = open(self.pgn_file)
+        pgn_indices = self.pgn_file.open("r")
         games_indices = []
         header = chess.pgn.read_headers(pgn_indices)
         while header:
@@ -87,7 +100,7 @@ class PgnToArrayConverter:
         return run_game_normal(game)
 
     def convert_games_to_arrays(self):
-        pgn = open(self.pgn_file)
+        pgn = self.pgn_file.open("r")
         number_of_chucks = int(((self.game_indices[-1] + 1) / self.batch_number)) + 1
         chucks = [range(self.batch_number * j, min(self.batch_number * (j + 1), self.game_limit)) for j in
                   range(0, number_of_chucks - 1)]
@@ -102,11 +115,11 @@ class PgnToArrayConverter:
                 else:
                     chess.pgn.skip_game(pgn)
             # s = time()
-            # tasks = [self.run_game.remote(game) for game in games]
-            # results = ray.get(tasks)
+            tasks = [self.run_game.remote(game) for game in games]
+            results = ray.get(tasks)
             # print(f"{time() - s}")
             # s = time()
-            results = [run_game_normal(game) for game in games]
+            # results = [run_game_normal(game) for game in games]
             # print(f"{time() - s}")
             # s = time()
             tensors = [r[0] for r in results]
@@ -166,5 +179,6 @@ class PgnToArrayConverter:
 
 
 if __name__ == '__main__':
-    data_converter = PgnToArrayConverter("data/lichess_elite_2020-06.pgn")
+    pgn_file = download_pgn("https://database.nikonoel.fr/lichess_elite_2021-01.zip")
+    data_converter = PgnToArrayConverter(pgn_file)
     data_converter.pgn_to_arrays()
