@@ -40,6 +40,10 @@ class ChessGUI(App):
         self.board_size = 8
         self.button_positions = {}
         self.board = Board()
+
+        moves_folder = Path("moves/")
+        if not moves_folder.exists():
+            moves_folder.mkdir(exist_ok=False)
         svg2png(bytestring=chess.svg.board(self.board, size=350), write_to=f'moves/chess.png')
         self.move_str = ""
 
@@ -168,4 +172,5 @@ class ChessGUI(App):
 
 
 if __name__ == '__main__':
-    ChessGUI("models/epochs_40_batch_size_512_2021-03-19_19:44:22.336811.h5").run()
+    model_path = Path("model_name.txt").open("r").read()
+    ChessGUI(model_path).run()

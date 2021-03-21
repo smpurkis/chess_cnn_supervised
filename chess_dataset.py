@@ -5,9 +5,9 @@ import tensorflow as tf
 class ChessDataset(tf.keras.utils.Sequence):
     def __init__(self, batch_size, validation=False, validation_split=0.1, random_seed=1, *args, **kwargs):
         self.batch_size = batch_size
-        self.tensors_filename = "data/tensor_arrs"
-        self.metas_filename = "data/meta_arrs"
-        self.targets_filename = "data/target_arrs"
+        self.tensors_filename = "data/tensors"
+        self.metas_filename = "data/metas"
+        self.targets_filename = "data/targets"
         self.tensors = np.memmap(self.tensors_filename, mode="r", dtype=np.int16).reshape((-1, 8, 8, 8))
         self.metas = np.memmap(self.metas_filename, mode="r", dtype=np.int16).reshape((-1, 8))
         self.targets = np.memmap(self.targets_filename, mode="r", dtype=np.int16)

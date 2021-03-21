@@ -13,9 +13,7 @@ from tqdm import tqdm
 
 from data_utils import move_to_target, board_to_tensor, tensor_to_board, target_to_move
 
-ray.init()
-
-print(f"resursion limit {10000 * sys.getrecursionlimit()}")
+# print(f"resursion limit {10000 * sys.getrecursionlimit()}")
 sys.setrecursionlimit(10000 * sys.getrecursionlimit())
 
 
@@ -48,10 +46,18 @@ def run_game_normal(game):
     return x_board, x_meta, y
 
 
-def download_pgn(download_url):
+def download_pgn(download_url, download=True):
     output_zip = Path("data/pgn_games.zip")
-    print(f"Downloading PGN at: {download_url}")
-    wget.download(download_url, out=output_zip.as_posix())
+    if output_zip.exists():
+        keep_zip = input(f"{output_zip.name} detected. Would you like to use this? (y/n) ")
+        if keep_zip == "n":
+            output_zip.unlink(missing_ok=True)
+            download = True
+        else:
+            download = False
+    if download:
+        print(f"Downloading PGN at: {download_url}")
+        wget.download(download_url, out=output_zip.as_posix())
     zip_file = zipfile.ZipFile(output_zip.as_posix())
     zip_file.extractall("data")
     pgn_path = Path("data", zip_file.filelist[0].filename)
@@ -80,8 +86,8 @@ class PgnToArrayConverter:
         while header:
             if game_number > self.game_limit:
                 break
-            if game_number % 100000 == 0:
-                print(game_number)
+            # if game_number % 100000 == 0:
+            #     print(game_number)
             black_elo = dict(header)["BlackElo"]
             white_elo = dict(header)["WhiteElo"]
             black_elo = int(black_elo) if black_elo.isalnum() else 0
@@ -100,6 +106,7 @@ class PgnToArrayConverter:
         return run_game_normal(game)
 
     def convert_games_to_arrays(self):
+        ray.init()
         pgn = self.pgn_file.open("r")
         number_of_chucks = int(((self.game_indices[-1] + 1) / self.batch_number)) + 1
         chucks = [range(self.batch_number * j, min(self.batch_number * (j + 1), self.game_limit)) for j in
@@ -142,6 +149,7 @@ class PgnToArrayConverter:
             np.save(tensors_file.as_posix(), tensors)
             np.save(metas_file.as_posix(), metas)
             np.save(targets_file.as_posix(), targets)
+        ray.shutdown()
 
     @staticmethod
     def load_to_one_file(save_name, files):
@@ -167,13 +175,13 @@ class PgnToArrayConverter:
         target_files = sorted([f for f in split_files if "target" in f.name])
 
         print("Processing tensors")
-        self.load_to_one_file(f"tensor_arrs_{self.rating}_rating_{len(self.game_indices)}_games", tensor_files)
+        self.load_to_one_file(f"tensors", tensor_files)
         print("Saving tensors")
         print("Processing metas")
-        self.load_to_one_file(f"meta_arrs_{self.rating}_rating_{len(self.game_indices)}_games", meta_files)
+        self.load_to_one_file(f"metas", meta_files)
         print("Saving metas")
         print("Processing targets")
-        self.load_to_one_file(f"target_arrs_{self.rating}_rating_{len(self.game_indices)}_games", target_files)
+        self.load_to_one_file(f"targets", target_files)
         print("Saving targets")
         shutil.rmtree("./data/splits/", ignore_errors=True)
 
