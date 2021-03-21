@@ -66,7 +66,7 @@ def download_pgn(download_url, download=True):
 
 
 class PgnToArrayConverter:
-    def __init__(self, pgn_file, rating=2600, game_limit=10000, batch_number=1000):
+    def __init__(self, pgn_file, rating=2600, game_limit=1000000000, batch_number=500):
         self.rating = rating
         self.game_limit = game_limit
         self.batch_number = batch_number
@@ -74,8 +74,11 @@ class PgnToArrayConverter:
         self.game_indices = []
 
     def pgn_to_arrays(self):
+        print("Indexing games")
         self.get_game_indices()
+        print("Converting to arrays")
         self.convert_games_to_arrays()
+        print("Merging data")
         self.make_data_to_one_file()
 
     def get_game_indices(self):

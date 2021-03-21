@@ -86,8 +86,8 @@ def define_callbacks():
     reduce_lr = k.callbacks.ReduceLROnPlateau(monitor='val_accuracy', factor=0.2,
                                               patience=2, min_lr=0.0001)
     early_stop = tf.keras.callbacks.EarlyStopping(patience=2),
-    model_checkpoint = tf.keras.callbacks.ModelCheckpoint(filepath='models/model_{epoch:02d}_{val_accuracy:.2f}.h5'),
-    return [reduce_lr, early_stop, model_checkpoint]
+    # model_checkpoint = tf.keras.callbacks.ModelCheckpoint(filepath='models/model_{epoch:02d}_{val_accuracy:.2f}.h5'),
+    return [reduce_lr, early_stop]
 
 
 if __name__ == '__main__':
