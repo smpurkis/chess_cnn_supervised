@@ -46,9 +46,9 @@ def run_game_normal(game):
     return x_board, x_meta, y
 
 
-def download_pgn(download_url, download=True):
+def download_pgn(download_url, download=True, overwrite=True):
     output_zip = Path("data/pgn_games.zip")
-    if output_zip.exists():
+    if output_zip.exists() and not overwrite:
         keep_zip = input(f"{output_zip.name} detected. Would you like to use this? (y/n) ")
         if keep_zip == "n":
             output_zip.unlink(missing_ok=True)
@@ -66,7 +66,7 @@ def download_pgn(download_url, download=True):
 
 
 class PgnToArrayConverter:
-    def __init__(self, pgn_file, rating=2600, game_limit=1000000000, batch_number=500):
+    def __init__(self, pgn_file, rating=2600, game_limit=1000000000, batch_number=10000):
         self.rating = rating
         self.game_limit = game_limit
         self.batch_number = batch_number
@@ -109,6 +109,7 @@ class PgnToArrayConverter:
         return run_game_normal(game)
 
     def convert_games_to_arrays(self):
+        [arr_file.unlink(missing_ok=True) for arr_file in Path("data", "splits").glob("*")]
         ray.init()
         pgn = self.pgn_file.open("r")
         number_of_chucks = int(((self.game_indices[-1] + 1) / self.batch_number)) + 1
@@ -157,14 +158,20 @@ class PgnToArrayConverter:
     @staticmethod
     def load_to_one_file(save_name, files):
         total_lengths = []
+        array_files = []
         for file in files:
             file_arr = np.load(str(file), allow_pickle=True)
-            total_lengths.append(file_arr.shape[0])
-        nmemmap_shape = (sum(total_lengths), *file_arr.shape[1:])
+            if file_arr.shape[0] > 0:
+                arr_shape = file_arr.shape
+                array_files.append(file)
+                total_lengths.append(file_arr.shape[0])
+        if len(total_lengths) == 0:
+            raise Exception("No games selected with these settings.")
+        nmemmap_shape = (sum(total_lengths), *arr_shape[1:])
         nmemmap = np.memmap(f"data/{save_name}", shape=nmemmap_shape, mode="w+", dtype=np.int16)
         start = 0
         end = 0
-        for i, file in enumerate(files):
+        for i, file in enumerate(array_files):
             end += total_lengths[i]
             file_arr = np.load(str(file), allow_pickle=True)
             nmemmap[start: end] = file_arr

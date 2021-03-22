@@ -14,9 +14,9 @@ from pgn_to_array_converter import download_pgn, PgnToArrayConverter
 from train_chess_cnn_keras import define_model, define_callbacks
 
 
-def get_data(download_url, rating=2400):
+def get_data(download_url, rating=2700, overwrite=True):
     # download the pgn
-    pgn_file = download_pgn(download_url)
+    pgn_file = download_pgn(download_url, overwrite=overwrite)
     print(f"\nRating threshold set to: {rating}")
     data_converter = PgnToArrayConverter(pgn_file, rating=rating)
     print("\nConverting PGN to numpy arrays")
@@ -52,7 +52,8 @@ def train_cnn(model_save_name=None, epochs=20, batch_size=256):
 
 
 def download_train_play_chess_cnn(download_url: str = "https://database.nikonoel.fr/lichess_elite_2021-01.zip",
-                                  rating: int = 2700, model_name: str = "chess_model.h5", epochs: int = 20):
+                                  rating: int = 2700, model_name: str = "chess_model.h5", epochs: int = 20,
+                                  overwrite: bool = True):
     """
     The complete pipeline of downloading PGN Zip from Lichess (https://database.nikonoel.fr),
     Training a CNN using Keras (https://keras.io) and then Playing the Engine using Kivy (https://kivy.org).
@@ -63,9 +64,10 @@ def download_train_play_chess_cnn(download_url: str = "https://database.nikonoel
     :param model_name: Model save name
     :param epochs: Number of epochs to train the Chess CNN on
     :param download_url: Path to Lichess PGN Zip, E.g. https://database.nikonoel.fr/lichess_elite_2021-01.zip".
+    :param overwrite: Overwrite existing files in download
     Otherwise can modify the download_pgn function yourself
     """
-    get_data(download_url, rating)
+    get_data(download_url, rating, overwrite)
     train_cnn(model_name, epochs)
     # commented out due to Tensorflow bug
     # play_cnn(model_name)
