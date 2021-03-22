@@ -74,4 +74,4 @@ When applying constrains like choosing out of legal moves, this rises to `>70%`.
 A few drawbacks:
 
 - I found it didn't always capture pieces and would sometimes make silly mistakes like sacrificing a queen for no reason. To counter this, I add a min-max algorithm at a depth of 2-3.
-- The data is only limited to the quantity of training data. Unlike, reinforcement learning or self play, which has the potential for infinite data. Although, this is not a particular problem for Chess.
+- The model accuracy is limited by the quantity of training data. Unlike, reinforcement learning or self play, which has the potential for infinite data. Although, this is not a particular problem for Chess.
