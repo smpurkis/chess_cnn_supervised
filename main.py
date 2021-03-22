@@ -1,11 +1,6 @@
 import os
-import time
-from datetime import datetime
-from pathlib import Path
 
 import fire
-import subprocess as sp
-import tensorflow as tf
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
@@ -53,7 +48,7 @@ def train_cnn(model_save_name=None, epochs=20, batch_size=256):
 
 def download_train_play_chess_cnn(download_url: str = "https://database.nikonoel.fr/lichess_elite_2021-01.zip",
                                   rating: int = 2700, model_name: str = "chess_model.h5", epochs: int = 20,
-                                  overwrite: bool = True):
+                                  overwrite: bool = True, skip_data: bool = False):
     """
     The complete pipeline of downloading PGN Zip from Lichess (https://database.nikonoel.fr),
     Training a CNN using Keras (https://keras.io) and then Playing the Engine using Kivy (https://kivy.org).
@@ -65,9 +60,11 @@ def download_train_play_chess_cnn(download_url: str = "https://database.nikonoel
     :param epochs: Number of epochs to train the Chess CNN on
     :param download_url: Path to Lichess PGN Zip, E.g. https://database.nikonoel.fr/lichess_elite_2021-01.zip".
     :param overwrite: Overwrite existing files in download
+    :param skip_data: Skip loading the data, makes sure it exists
     Otherwise can modify the download_pgn function yourself
     """
-    get_data(download_url, rating, overwrite)
+    if not skip_data:
+        get_data(download_url, rating, overwrite)
     train_cnn(model_name, epochs)
     # commented out due to Tensorflow bug
     # play_cnn(model_name)

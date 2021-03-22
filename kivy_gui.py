@@ -1,25 +1,21 @@
 import collections
-from copy import deepcopy
 from pathlib import Path
 
 import chess
 import chess.svg
-import numpy as np
 from cairosvg import svg2png
 from chess import Board
 from kivy.app import App
-from kivy.clock import Clock
 from kivy.cache import Cache
-
+from kivy.clock import Clock
 from kivy.graphics.vertex_instructions import Rectangle
 from kivy.uix.button import Button
 from kivy.uix.gridlayout import GridLayout
 from kivy.uix.label import Label
 from kivy.uix.popup import Popup
-from tensorflow.python.keras.models import load_model
 
-from data_utils import target_to_move
 from chess_model import ChessModel
+from data_utils import target_to_move
 
 
 class ChessButton(Button):
@@ -165,7 +161,7 @@ class ChessGUI(App):
                 self.layout.add_widget(
                     ChessButton(
                         id=str(target_to_move(k))[:2],
-                        background_color=(0.1, 0.1, 0.1, 0.5),
+                        background_color=(0.1, 0.1, 0.1, 0.6),
                         on_press=self.update_button
                     )
                 )

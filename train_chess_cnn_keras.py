@@ -8,7 +8,7 @@ from tensorflow.python.keras.layers import BatchNormalization, Dense, Flatten, C
 from chess_dataset import ChessDataset
 
 
-def define_model(input_shape, player_input_shape, filters=4):
+def define_model(input_shape, player_input_shape, filters=16):
     input_ = Input(shape=input_shape)
     player_input = Input(player_input_shape)
     p = Dense(8)(player_input)
@@ -48,16 +48,16 @@ def define_model(input_shape, player_input_shape, filters=4):
     x2 = Conv2D(filters, 3, 1, padding=padding, activation="relu")(x2)
     x2 = BatchNormalization()(x2)
 
-    x3 = Concatenate()([x, x2])
+    x2 = Concatenate()([x, x2])
 
     # x3 = Conv2D(2 * filters, 5, 1, padding="valid", activation="relu")(x2)
     # x3 = BatchNormalization()(x3)
-    # x3 = Conv2D(filters, 3, 1, padding=padding, activation="relu")(x2)
-    # x3 = BatchNormalization()(x3)
-    # x3 = Conv2D(filters, 3, 1, padding=padding, activation="relu")(x3)
-    # x2 = BatchNormalization()(x3)
-    #
-    # x3 = Concatenate()([x2, x3])
+    x3 = Conv2D(filters, 3, 1, padding=padding, activation="relu")(x2)
+    x3 = BatchNormalization()(x3)
+    x3 = Conv2D(filters, 3, 1, padding=padding, activation="relu")(x3)
+    x2 = BatchNormalization()(x3)
+
+    x3 = Concatenate()([x2, x3])
 
     x3 = Flatten()(x3)
     x3 = Concatenate()([x3, p])

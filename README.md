@@ -11,7 +11,7 @@ An implementation of a Chess CNN trained on a collection of PGN games:
 to use, run `python main.py; python kivy_gui.py `
 
 
-for example: `python main.py --epochs=5 --download_url="https://database.nikonoel.fr/lichess_elite_2020-09.zip"; python kivy_gui.py`
+for example: `python main.py --epochs=10 --rating=2500 --download_url="https://database.nikonoel.fr/lichess_elite_2020-09.zip"; python kivy_gui.py`
 
 Full options of `main.py` (running `python main.py --help`) are :
 ```
