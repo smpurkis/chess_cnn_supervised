@@ -51,13 +51,13 @@ FLAGS
 ## Method
 
 I heavily rely on [python-chess](https://github.com/niklasf/python-chess) for handling the chess logic. I used Numpy and Tensorflow to convert the Chess board state into a Tensor:
-  - 8x8 for the spatial information on the board
-  - Another 7 for the information on each square, e.g. (colour of the piece, is it a pawn, is it a knight...). I repeat the colour of the piece in the last position, leading to another 8 array
+  - 8x8 for the spatial information on the board, one for each row and column.
+  - Another 7 for the information on each square, e.g. (colour of the piece, is it a pawn, is it a knight...). I repeat the colour of the piece in the last position, leading to another 8 array.
   - Lastly, I encode the overall state with another array of size 8, (whose turn it is, castling rights), I ignore En passant and add 3 values to pad to size 8.
 
 Thus, I have an array of 8x8x8 for the board and 8 for the overall state as inputs.
 
-The output is a one-hot array of size 4096 (64*64). This is ever combination of square to move from to square to move to. 
+The output is a one-hot array of size 4096 (64*64). This is every combination of square to move from to square to move to on the board. 
 
 The model itself is very variable, one example of the layout:
 
