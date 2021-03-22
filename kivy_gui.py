@@ -86,7 +86,7 @@ class ChessGUI(App):
 
     def update_button(self, button):
         self.move_str += button.id
-        print(self.move_str)
+        # print(self.move_str)
 
         if len(self.move_str) == 4:
             Cache.remove('kv.image')
@@ -96,7 +96,7 @@ class ChessGUI(App):
                 to_square=chess.parse_square(self.move_str[2:4])
             )
             move = self.check_pawn_promotion(move)
-            print(move)
+            print(f"Your move: {move}")
             if move in self.board.legal_moves:
                 self.board.push(move)
                 [Path(m).unlink(missing_ok=True) for m in list(Path("moves/").glob("chess*"))]
@@ -112,7 +112,7 @@ class ChessGUI(App):
                 # ai_move = list(self.board.legal_moves)[0]
                 # print(ai_move)
                 ai_move = self.engine.make_move(self.board)
-                print(ai_move)
+                print(f"AI move: {ai_move}")
 
                 if isinstance(ai_move, chess.Move):
                     self.board.push(ai_move)
@@ -173,4 +173,4 @@ class ChessGUI(App):
 
 if __name__ == '__main__':
     model_path = Path("model_name.txt").open("r").read()
-    ChessGUI(model_path).run()
+    ChessGUI(model_path, verbose=True).run()

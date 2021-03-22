@@ -72,10 +72,10 @@ class ChessModel:
         move_rankings = np.array([target_to_move(elem) for elem in target_rankings])
 
         # extracted highest probability legal moves
-        legal_move_probabilities = np.array([move for move in move_rankings if move in legal_moves])
+        legal_ai_move = np.array([move for move in move_rankings if move in legal_moves])
 
         # return top n moves
-        return legal_move_probabilities[:top_n]
+        return legal_ai_move[:top_n]
 
     def get_move_by_material(self, board, number_of_top_moves=100, depth=1, depth_limit=3, alpha=-100000.0,
                              beta=100000.0, verbose=False):
