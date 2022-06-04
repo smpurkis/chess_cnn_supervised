@@ -19,7 +19,7 @@ colorama==0.4.4
 colorful==0.5.4
 cssselect2==0.4.1
 cycler==0.10.0
-Cython==0.29.22
+Cython==0.29.30; python_version == "3.7"
 defusedxml==0.7.1
 docutils==0.16
 filelock==3.0.12

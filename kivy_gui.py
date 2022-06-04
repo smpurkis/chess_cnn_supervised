@@ -61,7 +61,7 @@ class ChessGUI(App):
         self.rect.size = (self.rect.size[0] + 0.1, self.rect.size[1])
 
     def reset_board(self):
-        [Path(m).unlink(missing_ok=True) for m in list(Path("moves/").glob("chess*"))]
+        [Path(m).unlink() for m in list(Path("moves/").glob("chess*"))]
         self.board = Board()
         self.move_str = ""
         save_name = 'chess.png'
@@ -95,7 +95,7 @@ class ChessGUI(App):
             print(f"Your move: {move}")
             if move in self.board.legal_moves:
                 self.board.push(move)
-                [Path(m).unlink(missing_ok=True) for m in list(Path("moves/").glob("chess*"))]
+                [Path(m).unlink() for m in list(Path("moves/").glob("chess*"))]
                 save_name = f'moves/chess_{str(move)}_{self.board.turn}.png'
                 svg2png(bytestring=chess.svg.board(self.board, size=350),
                         write_to=save_name)
@@ -117,7 +117,7 @@ class ChessGUI(App):
 
                 if self.board.is_game_over():
                     return self.declare_winner()
-                [Path(m).unlink(missing_ok=True) for m in list(Path("moves/").glob("chess*"))]
+                [Path(m).unlink() for m in list(Path("moves/").glob("chess*"))]
                 save_name = f'moves/chess_{str(move)}_{self.board.turn}.png'
                 svg2png(bytestring=chess.svg.board(self.board, size=350),
                         write_to=save_name)
