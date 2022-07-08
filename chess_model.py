@@ -38,7 +38,7 @@ def board_to_game(board):
 
 
 def print_board(board):
-    svg2png(bytestring=chess.svg.board(board, size=350), write_to='chess.png')
+    svg2png(bytestring=chess.svg.board(board, size=350), write_to="chess.png")
     p = Image.open("chess.png")
     plt.imshow(np.asarray(p))
     plt.show()
@@ -46,14 +46,7 @@ def print_board(board):
 
 class ChessModel:
     def __init__(self, model_path, verbose=False):
-        self.pieces_score = {
-            "q": 9,
-            "r": 5,
-            "b": 3.5,
-            "n": 3,
-            "p": 1,
-            "k": 0
-        }
+        self.pieces_score = {"q": 9, "r": 5, "b": 3.5, "n": 3, "p": 1, "k": 0}
         self.engine = tf.keras.models.load_model(model_path)
         self.verbose = verbose
 
@@ -68,24 +61,48 @@ class ChessModel:
         target_probabilities = self.engine.predict(tensor).reshape(-1)
 
         # rank by probability
-        target_rankings = target_probabilities.argsort()[-len(target_probabilities):][::-1]
+        target_rankings = target_probabilities.argsort()[-len(target_probabilities) :][
+            ::-1
+        ]
         move_rankings = np.array([target_to_move(elem) for elem in target_rankings])
 
         # extracted highest probability legal moves
-        legal_ai_move = np.array([move for move in move_rankings if move in legal_moves])
+        legal_ai_move = np.array(
+            [move for move in move_rankings if move in legal_moves]
+        )
 
         # return top n moves
         return legal_ai_move[:top_n]
 
-    def get_move_by_material(self, board, number_of_top_moves=100, depth=1, depth_limit=3, alpha=-100000.0,
-                             beta=100000.0, verbose=False):
+    def get_move_by_material(
+        self,
+        board,
+        number_of_top_moves=100,
+        depth=1,
+        depth_limit=3,
+        alpha=-100000.0,
+        beta=100000.0,
+        verbose=False,
+    ):
         # if only want model moves
         if depth_limit == 1:
             return self.get_legal_ai_moves(board, 1)[0]
 
         piece_map = board.piece_map()
-        white_material = np.sum([self.pieces_score[str(p).lower()] for p in piece_map.values() if str(p).isupper()])
-        black_material = np.sum([self.pieces_score[str(p).lower()] for p in piece_map.values() if str(p).islower()])
+        white_material = np.sum(
+            [
+                self.pieces_score[str(p).lower()]
+                for p in piece_map.values()
+                if str(p).isupper()
+            ]
+        )
+        black_material = np.sum(
+            [
+                self.pieces_score[str(p).lower()]
+                for p in piece_map.values()
+                if str(p).islower()
+            ]
+        )
 
         # calculate score of board state based on material
         current_material_score = white_material - black_material
@@ -105,28 +122,44 @@ class ChessModel:
         if depth <= 1:
             top_n = 3
             prioritized_moves = self.get_legal_ai_moves(board, top_n)
-            prioritized_moves = np.stack((prioritized_moves[:number_of_top_moves],
-                                          np.asarray([depth_limit for i in range(len(prioritized_moves))]),
-                                          np.ones(len(prioritized_moves))), axis=1)
+            prioritized_moves = np.stack(
+                (
+                    prioritized_moves[:number_of_top_moves],
+                    np.asarray([depth_limit for i in range(len(prioritized_moves))]),
+                    np.ones(len(prioritized_moves)),
+                ),
+                axis=1,
+            )
             if len(prioritized_moves) != 0:
                 all_other_moves = np.asarray(
-                    [(move, depth_limit, 0) for move in list(board.legal_moves) if move not in prioritized_moves[:, 0]])
+                    [
+                        (move, depth_limit, 0)
+                        for move in list(board.legal_moves)
+                        if move not in prioritized_moves[:, 0]
+                    ]
+                )
                 if all_other_moves.size > 0:
                     prioritized_moves = np.vstack((prioritized_moves, all_other_moves))
             else:
-                prioritized_moves = np.asarray([(move, depth_limit, 0) for move in list(board.legal_moves)])
+                prioritized_moves = np.asarray(
+                    [(move, depth_limit, 0) for move in list(board.legal_moves)]
+                )
         else:
-            prioritized_moves = np.asarray([(move, depth_limit, 0) for move in list(board.legal_moves)])
+            prioritized_moves = np.asarray(
+                [(move, depth_limit, 0) for move in list(board.legal_moves)]
+            )
 
         # min max search on move tree
         for move, low_depth_limit, priority in prioritized_moves:
             future_board = deepcopy(board)
             future_board.push(move)
-            mat_score = self.get_move_by_material(future_board,
-                                                  depth=depth + 1,
-                                                  depth_limit=low_depth_limit,
-                                                  alpha=alpha,
-                                                  beta=beta)
+            mat_score = self.get_move_by_material(
+                future_board,
+                depth=depth + 1,
+                depth_limit=low_depth_limit,
+                alpha=alpha,
+                beta=beta,
+            )
             relative_scores = np.append(relative_scores, mat_score)
 
             # alpha beta pruning
@@ -148,7 +181,11 @@ class ChessModel:
         else:
             if self.verbose:
                 print(relative_scores)
-                print(np.concatenate((prioritized_moves, relative_scores.reshape(-1, 1)), axis=1))
+                print(
+                    np.concatenate(
+                        (prioritized_moves, relative_scores.reshape(-1, 1)), axis=1
+                    )
+                )
 
             # return best move result
             if board.turn:
@@ -156,7 +193,9 @@ class ChessModel:
                 if self.verbose:
                     print(max_indices)
 
-                max_priority_indices = np.where(prioritized_moves[max_indices][:, 2] == 1)[0]
+                max_priority_indices = np.where(
+                    prioritized_moves[max_indices][:, 2] == 1
+                )[0]
                 if self.verbose:
                     print(max_priority_indices)
 
@@ -174,7 +213,9 @@ class ChessModel:
                 if self.verbose:
                     print(min_indices)
 
-                min_priority_indices = np.where(prioritized_moves[min_indices][:, 2] == 1)[0]
+                min_priority_indices = np.where(
+                    prioritized_moves[min_indices][:, 2] == 1
+                )[0]
                 if self.verbose:
                     print(min_priority_indices)
 
@@ -212,10 +253,11 @@ def play_game():
         if board.turn == chess.WHITE:
             print_board(board)
             questions = [
-                inquirer.List("move",
-                              message="What is your move?",
-                              choices=list(board.legal_moves),
-                              )
+                inquirer.List(
+                    "move",
+                    message="What is your move?",
+                    choices=list(board.legal_moves),
+                )
             ]
             move = inquirer.prompt(questions)
             board.push(move["move"])
@@ -225,5 +267,5 @@ def play_game():
     print(board.result())
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     play_game()

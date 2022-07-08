@@ -40,7 +40,10 @@ class ChessGUI(App):
         moves_folder = Path("moves/")
         if not moves_folder.exists():
             moves_folder.mkdir(exist_ok=False)
-        svg2png(bytestring=chess.svg.board(self.board, size=350), write_to=f'moves/chess.png')
+        svg2png(
+            bytestring=chess.svg.board(self.board, size=350),
+            write_to=f"moves/chess.png",
+        )
         self.move_str = ""
 
         self.engine = ChessModel(model_path, verbose=verbose)
@@ -49,7 +52,7 @@ class ChessGUI(App):
         self.layout = GridLayout(cols=self.board_size, padding="31px")
 
         with self.layout.canvas:
-            self.rect = Rectangle(source='chess.png')
+            self.rect = Rectangle(source="chess.png")
 
         Clock.schedule_interval(self.update, 1)
         self.add_board_buttons()
@@ -64,9 +67,8 @@ class ChessGUI(App):
         [Path(m).unlink() for m in list(Path("moves/").glob("chess*"))]
         self.board = Board()
         self.move_str = ""
-        save_name = 'chess.png'
-        svg2png(bytestring=chess.svg.board(self.board, size=350),
-                write_to=save_name)
+        save_name = "chess.png"
+        svg2png(bytestring=chess.svg.board(self.board, size=350), write_to=save_name)
         self.rect.source = save_name
 
     def check_pawn_promotion(self, move):
@@ -85,20 +87,21 @@ class ChessGUI(App):
         # print(self.move_str)
 
         if len(self.move_str) == 4:
-            Cache.remove('kv.image')
-            Cache.remove('kv.texture')
+            Cache.remove("kv.image")
+            Cache.remove("kv.texture")
             move = chess.Move(
                 from_square=chess.parse_square(self.move_str[:2]),
-                to_square=chess.parse_square(self.move_str[2:4])
+                to_square=chess.parse_square(self.move_str[2:4]),
             )
             move = self.check_pawn_promotion(move)
             print(f"Your move: {move}")
             if move in self.board.legal_moves:
                 self.board.push(move)
                 [Path(m).unlink() for m in list(Path("moves/").glob("chess*"))]
-                save_name = f'moves/chess_{str(move)}_{self.board.turn}.png'
-                svg2png(bytestring=chess.svg.board(self.board, size=350),
-                        write_to=save_name)
+                save_name = f"moves/chess_{str(move)}_{self.board.turn}.png"
+                svg2png(
+                    bytestring=chess.svg.board(self.board, size=350), write_to=save_name
+                )
                 self.rect.source = save_name
 
                 if self.board.is_game_over():
@@ -118,9 +121,10 @@ class ChessGUI(App):
                 if self.board.is_game_over():
                     return self.declare_winner()
                 [Path(m).unlink() for m in list(Path("moves/").glob("chess*"))]
-                save_name = f'moves/chess_{str(move)}_{self.board.turn}.png'
-                svg2png(bytestring=chess.svg.board(self.board, size=350),
-                        write_to=save_name)
+                save_name = f"moves/chess_{str(move)}_{self.board.turn}.png"
+                svg2png(
+                    bytestring=chess.svg.board(self.board, size=350), write_to=save_name
+                )
                 self.rect.source = save_name
             self.move_str = ""
 
@@ -147,9 +151,12 @@ class ChessGUI(App):
         return game
 
     def declare_winner(self):
-        popup = Popup(title='Test popup',
-                      content=Label(text=f"{self.board.result()}"),
-                      size_hint=(None, None), size=(400, 400))
+        popup = Popup(
+            title="Test popup",
+            content=Label(text=f"{self.board.result()}"),
+            size_hint=(None, None),
+            size=(400, 400),
+        )
         popup.open()
         self.board_to_game()
         self.reset_board()
@@ -162,11 +169,11 @@ class ChessGUI(App):
                     ChessButton(
                         id=str(target_to_move(k))[:2],
                         background_color=(0.1, 0.1, 0.1, 0.6),
-                        on_press=self.update_button
+                        on_press=self.update_button,
                     )
                 )
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     model_path = Path("model_name.txt").open("r").read()
     ChessGUI(model_path, verbose=True).run()

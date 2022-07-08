@@ -2,7 +2,7 @@ import os
 
 import fire
 
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
+os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
 
 from chess_dataset import ChessDataset
 from pgn_to_array_converter import download_pgn, PgnToArrayConverter
@@ -29,7 +29,7 @@ def train_cnn(model_save_name=None, epochs=20, batch_size=256):
         validation_data=ChessDataset(batch_size=batch_size, validation=True),
         workers=4,
         shuffle=True,
-        callbacks=define_callbacks()
+        callbacks=define_callbacks(),
     )
     model.save(model_save_name, overwrite=True)
     # Tensorflow currently hordes the GPU memory after training
@@ -46,9 +46,14 @@ def train_cnn(model_save_name=None, epochs=20, batch_size=256):
 #     sp.run(cmd.split())
 
 
-def download_train_play_chess_cnn(download_url: str = "https://database.nikonoel.fr/lichess_elite_2021-01.zip",
-                                  rating: int = 2700, model_name: str = "chess_model.h5", epochs: int = 20,
-                                  overwrite: bool = True, skip_data: bool = False):
+def download_train_play_chess_cnn(
+    download_url: str = "https://database.nikonoel.fr/lichess_elite_2021-01.zip",
+    rating: int = 2700,
+    model_name: str = "chess_model.h5",
+    epochs: int = 20,
+    overwrite: bool = True,
+    skip_data: bool = False,
+):
     """
     The complete pipeline of downloading PGN Zip from Lichess (https://database.nikonoel.fr),
     Training a CNN using Keras (https://keras.io) and then Playing the Engine using Kivy (https://kivy.org).
@@ -70,5 +75,5 @@ def download_train_play_chess_cnn(download_url: str = "https://database.nikonoel
     # play_cnn(model_name)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     fire.Fire(download_train_play_chess_cnn)

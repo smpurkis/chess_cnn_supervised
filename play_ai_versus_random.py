@@ -46,11 +46,15 @@ def play_game(ai, results, i):
             # move = random.choice(list(board.legal_moves))
             # board.push(move)
 
-    if not any((board.is_stalemate(),
-                board.is_fivefold_repetition(),
-                board.is_seventyfive_moves(),
-                board.is_repetition(),
-                board.is_insufficient_material())):
+    if not any(
+        (
+            board.is_stalemate(),
+            board.is_fivefold_repetition(),
+            board.is_seventyfive_moves(),
+            board.is_repetition(),
+            board.is_insufficient_material(),
+        )
+    ):
         if board.turn == chess.WHITE:
             results["black"] += 1
         else:
@@ -61,24 +65,16 @@ def play_game(ai, results, i):
     return results
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     # ai = load_model("models/epochs_40_batch_size_512_2021-03-19_19:44:22.336811.h5")
     ai = "models/epochs_40_batch_size_512_2021-03-19_19:44:22.336811.h5"
-    results = {
-        "white": 0,
-        "black": 0,
-        "draw": 0
-    }
+    results = {"white": 0, "black": 0, "draw": 0}
     ray.init()
     start = time.time()
     futures = [play_game_remote.remote(ai, results, i) for i in range(100)]
     results_list = ray.get(futures)
     print(f"{time.time() - start}")
-    results = {
-        "white": 0,
-        "black": 0,
-        "draw": 0
-    }
+    results = {"white": 0, "black": 0, "draw": 0}
     for r in results_list:
         for k, v in r.items():
             results[k] += v

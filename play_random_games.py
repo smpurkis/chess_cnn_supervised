@@ -10,6 +10,7 @@ import time
 def ray_play_random_game(results):
     return play_random_game(results)
 
+
 def play_random_game(results):
     board = chess.Board()
     # print(board)
@@ -18,10 +19,11 @@ def play_random_game(results):
         turn_number += 1
         if board.turn == chess.WHITE and False:
             questions = [
-                inquirer.List("move",
-                              message="What is your move?",
-                              choices=list(board.legal_moves),
-                              )
+                inquirer.List(
+                    "move",
+                    message="What is your move?",
+                    choices=list(board.legal_moves),
+                )
             ]
             move = inquirer.prompt(questions)
             board.push(move["move"])
@@ -36,11 +38,15 @@ def play_random_game(results):
     # print("75 moves:", board.is_seventyfive_moves())
     # print("3th repitition:", board.is_repetition())
     # print("insufficient material:", board.is_insufficient_material())
-    if not any((board.is_stalemate(),
-                board.is_fivefold_repetition(),
-                board.is_seventyfive_moves(),
-                board.is_repetition(),
-                board.is_insufficient_material())):
+    if not any(
+        (
+            board.is_stalemate(),
+            board.is_fivefold_repetition(),
+            board.is_seventyfive_moves(),
+            board.is_repetition(),
+            board.is_insufficient_material(),
+        )
+    ):
         if board.turn == chess.WHITE:
             results["black"] += 1
         else:
@@ -51,25 +57,16 @@ def play_random_game(results):
     return results
 
 
-if __name__ == '__main__':
-    results = {
-        "white": 0,
-        "black": 0,
-        "draw": 0
-    }
+if __name__ == "__main__":
+    results = {"white": 0, "black": 0, "draw": 0}
     start = time.time()
     ray.init()
-    futures = [ray_play_random_game.remote(results) for i in range(10000)]
+    futures = [ray_play_random_game.remote(results) for i in range(10)]
     results_list = ray.get(futures)
-    results = {
-        "white": 0,
-        "black": 0,
-        "draw": 0
-    }
+    results = {"white": 0, "black": 0, "draw": 0}
     for r in results_list:
         for k, v in r.items():
             results[k] += v
     # results = [play_random_game(results) for i in range(100)][0]
     print(results)
     o = 0
-

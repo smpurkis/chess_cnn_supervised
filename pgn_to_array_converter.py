@@ -49,7 +49,9 @@ def run_game_normal(game):
 def download_pgn(download_url, download=True, overwrite=True):
     output_zip = Path("data/pgn_games.zip")
     if output_zip.exists() and not overwrite:
-        keep_zip = input(f"{output_zip.name} detected. Would you like to use this? (y/n) ")
+        keep_zip = input(
+            f"{output_zip.name} detected. Would you like to use this? (y/n) "
+        )
         if keep_zip == "n":
             output_zip.unlink(missing_ok=True)
             download = True
@@ -66,7 +68,9 @@ def download_pgn(download_url, download=True, overwrite=True):
 
 
 class PgnToArrayConverter:
-    def __init__(self, pgn_file, rating=2600, game_limit=1000000000, batch_number=10000):
+    def __init__(
+        self, pgn_file, rating=2600, game_limit=1000000000, batch_number=10000
+    ):
         self.rating = rating
         self.game_limit = game_limit
         self.batch_number = batch_number
@@ -96,7 +100,11 @@ class PgnToArrayConverter:
             black_elo = int(black_elo) if black_elo.isalnum() else 0
             white_elo = int(white_elo) if white_elo.isalnum() else 0
             termination = dict(header)["Termination"]
-            if black_elo > self.rating or white_elo > self.rating and termination != "Time forfeit":
+            if (
+                black_elo > self.rating
+                or white_elo > self.rating
+                and termination != "Time forfeit"
+            ):
                 games_indices.append(game_number)
             header = chess.pgn.read_headers(pgn_indices)
             game_number += 1
@@ -109,12 +117,19 @@ class PgnToArrayConverter:
         return run_game_normal(game)
 
     def convert_games_to_arrays(self):
-        [arr_file.unlink(missing_ok=True) for arr_file in Path("data", "splits").glob("*")]
+        [
+            arr_file.unlink(missing_ok=True)
+            for arr_file in Path("data", "splits").glob("*")
+        ]
         ray.init()
         pgn = self.pgn_file.open("r")
         number_of_chucks = int(((self.game_indices[-1] + 1) / self.batch_number)) + 1
-        chucks = [range(self.batch_number * j, min(self.batch_number * (j + 1), self.game_limit)) for j in
-                  range(0, number_of_chucks - 1)]
+        chucks = [
+            range(
+                self.batch_number * j, min(self.batch_number * (j + 1), self.game_limit)
+            )
+            for j in range(0, number_of_chucks - 1)
+        ]
         pbar = tqdm(chucks)
         for k, chuck in enumerate(pbar):
             games = []
@@ -168,13 +183,15 @@ class PgnToArrayConverter:
         if len(total_lengths) == 0:
             raise Exception("No games selected with these settings.")
         nmemmap_shape = (sum(total_lengths), *arr_shape[1:])
-        nmemmap = np.memmap(f"data/{save_name}", shape=nmemmap_shape, mode="w+", dtype=np.int16)
+        nmemmap = np.memmap(
+            f"data/{save_name}", shape=nmemmap_shape, mode="w+", dtype=np.int16
+        )
         start = 0
         end = 0
         for i, file in enumerate(array_files):
             end += total_lengths[i]
             file_arr = np.load(str(file), allow_pickle=True)
-            nmemmap[start: end] = file_arr
+            nmemmap[start:end] = file_arr
             nmemmap.flush()
             start += total_lengths[i]
 
@@ -196,7 +213,7 @@ class PgnToArrayConverter:
         shutil.rmtree("./data/splits/", ignore_errors=True)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     pgn_file = download_pgn("https://database.nikonoel.fr/lichess_elite_2021-01.zip")
     data_converter = PgnToArrayConverter(pgn_file)
     data_converter.pgn_to_arrays()
